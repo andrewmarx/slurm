@@ -1,0 +1,7 @@
+email=youremail@ufl.edu
+max_simultaneous_jobs=20
+total_jobs=5
+max_time_per_job=01:00:00
+mem_per_job=2gb
+simulations_per_job=10
+hpc_account=account_name
