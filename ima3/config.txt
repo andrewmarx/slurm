@@ -1,0 +1,11 @@
+email=email@ufl.edu
+cores=10
+mem_per_core=2gb
+iterations=3                # Used to break the runs down into a sequence of shorter runs. The first iteration might take longer because it will do the burnin
+iteration_time=05:00:00      # If any iteration takes longer than this, the job will be canceled
+hpc_account=austin
+
+# Important notes:
+# -L should be adjusted based on the `iterations` option above. The total steps that IMa3 is run is the value for -L multiplied by the iterations option.
+# -r should always have the `7` option included. This allows it to run repeatedly, and will build on previous runs.
+ima3_options="-i ./data/FL_CU_IMA_15.u -o ./output/FL_CU_50_test2.out -b 5000 -d 50 -hn 50 -ha 0.98 -hb 0.89 -L 200 -m 10 -j 4 -p 23567 -q 500 -r 57 -s 34532 -t 20 -u20 -z 500"
