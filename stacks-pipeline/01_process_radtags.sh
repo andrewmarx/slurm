@@ -12,7 +12,7 @@ mkdir -p ./output/logs/process_radtags/
 mkdir -p ./scripts/process/
 
 process_jobs=$(find ./data/* -maxdepth 0 -type d | wc -l)
-slurm_modules="stacks/2.1"
+slurm_modules="stacks/2.53"
 
 echo "#!/bin/bash
 

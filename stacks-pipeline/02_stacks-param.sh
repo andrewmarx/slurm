@@ -16,7 +16,7 @@ mkdir -p ./output/param/gstacks/
 mkdir -p ./output/param/populations/
 mkdir -p ./output/param/figures/
 
-slurm_modules="stacks/2.3e"
+slurm_modules="stacks/2.53"
 
 # Remove any files to avoid previous runs from causing unexpected results
 rm -r ./output/param/samples/*
