@@ -3,33 +3,33 @@
 . ./config.txt
 
 mkdir -p ./results/
-mkdir -p ./results/param/
-mkdir -p ./output/param/
-mkdir -p ./scripts/param/
-mkdir -p ./output/param/logs/
-mkdir -p ./output/param/samples/
-mkdir -p ./output/param/ustacks/
-mkdir -p ./output/param/cstacks/
-mkdir -p ./output/param/sstacks/
-mkdir -p ./output/param/tsv2bam/
-mkdir -p ./output/param/gstacks/
-mkdir -p ./output/param/populations/
-mkdir -p ./output/param/figures/
+mkdir -p ./results/02_param/
+mkdir -p ./output/02_param/
+mkdir -p ./scripts/02_param/
+mkdir -p ./output/02_param/logs/
+mkdir -p ./output/02_param/samples/
+mkdir -p ./output/02_param/ustacks/
+mkdir -p ./output/02_param/cstacks/
+mkdir -p ./output/02_param/sstacks/
+mkdir -p ./output/02_param/tsv2bam/
+mkdir -p ./output/02_param/gstacks/
+mkdir -p ./output/02_param/populations/
+mkdir -p ./output/02_param/figures/
 
 slurm_modules="stacks/2.53"
 
 # Remove any files to avoid previous runs from causing unexpected results
-rm -r ./output/param/samples/*
+rm -r ./output/02_param/samples/*
 
 # Create an empty popmap file
-> ./output/param/popmap.txt
+> ./output/02_param/popmap.txt
 
 for f in "${samples[@]}"; do
   # Make a symbolic link to the sample file
-  ln -s "../../samples/${f}.fq.gz" ./output/param/samples/
+  ln -s "../../01_radtags/samples/${f}.fq.gz" ./output/02_param/samples/
 
   # Add the sample to the popmap file
-  echo -e "${f}\t1" >> ./output/param/popmap.txt
+  echo -e "${f}\t1" >> ./output/02_param/popmap.txt
 done
 
 
@@ -37,7 +37,7 @@ done
 # ustacks
 #
 
-num_samples=$(find ./output/param/samples/ -name "*.gz" | wc -l)
+num_samples=$(find ./output/02_param/samples/ -name "*.gz" | wc -l)
 ustacks_jobs=$((${#M[@]} * ${#m[@]} * $num_samples))
 ustacks_cores=10
 
@@ -48,8 +48,8 @@ echo "#!/bin/bash
 #SBATCH --job-name=01_ustacks
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=${email}
-#SBATCH --output ./output/param/logs/01_ustacks_%a.log
-#SBATCH --error ./output/param/logs/01_ustacks_%a.log
+#SBATCH --output ./output/02_param/logs/01_ustacks_%a.log
+#SBATCH --error ./output/02_param/logs/01_ustacks_%a.log
 #SBATCH --array=1-${ustacks_jobs}%$((${cores} / ${ustacks_cores}))
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -66,7 +66,7 @@ counter=0
 for M in ${M[*]}; do
   for m in ${m[*]}; do
     f_counter=0
-    for data_file in ./output/param/samples/*.gz; do
+    for data_file in ./output/02_param/samples/*.gz; do
       counter=\$((counter + 1))
       f_counter=\$((f_counter + 1))
       if [ \$counter -eq \$SLURM_ARRAY_TASK_ID ]; then
@@ -81,7 +81,7 @@ sample_name=\${sample_name%%.*}
 echo \$sample_name
 
 
-outdir=\"./output/param/ustacks/\${M}_\${m}/\"
+outdir=\"./output/02_param/ustacks/\${M}_\${m}/\"
 mkdir -p \$outdir
 
 start_time=\$(date '+%F %T')
@@ -98,10 +98,10 @@ then
   echo \"Sample already processed\"
 else
   rm -r \$outdir\${sample_name}.*
-  rm -r ./output/param/cstacks/\${M}_\${m}_*/
-  rm -r ./output/param/sstacks/\${M}_\${m}_*/
-  rm -r ./output/param/tsv2bam/\${M}_\${m}_*/
-  rm -r ./output/param/gstacks/\${M}_\${m}_*/
+  rm -r ./output/02_param/cstacks/\${M}_\${m}_*/
+  rm -r ./output/02_param/sstacks/\${M}_\${m}_*/
+  rm -r ./output/02_param/tsv2bam/\${M}_\${m}_*/
+  rm -r ./output/02_param/gstacks/\${M}_\${m}_*/
   rm -r ./outputparam//populations/\${M}_\${m}_*/
   rm -r ./results/\${M}_\${m}_*/
   ustacks -f \$data_file -o \$outdir -i \$f_counter -M \${M} -m \${m} -p ${ustacks_cores}
@@ -124,7 +124,7 @@ else
   sleep 10
   exit -1
 fi
-" > ./scripts/param/01_ustacks.sh
+" > ./scripts/02_param/01_ustacks.sh
 
 
 
@@ -141,8 +141,8 @@ echo "#!/bin/bash
 #SBATCH --job-name=02_cstacks
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=${email}
-#SBATCH --output ./output/param/logs/02_cstacks_%a.log
-#SBATCH --error ./output/param/logs/02_cstacks_%a.log
+#SBATCH --output ./output/02_param/logs/02_cstacks_%a.log
+#SBATCH --error ./output/02_param/logs/02_cstacks_%a.log
 #SBATCH --array=1-${cstacks_jobs}%$((${cores} / ${cstacks_cores}))
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -170,10 +170,10 @@ done
 
 n=\$((n + M))
 
-outdir=\"./output/param/cstacks/\${M}_\${m}_\${n}\"
+outdir=\"./output/02_param/cstacks/\${M}_\${m}_\${n}\"
 mkdir \$outdir
 
-for f in ./output/param/ustacks/\${M}_\${m}/*; do
+for f in ./output/02_param/ustacks/\${M}_\${m}/*; do
   file_name=\$(basename \${f})
   ln -s ../../ustacks/\${M}_\${m}/\${file_name} \$outdir/
 done
@@ -191,7 +191,7 @@ if [ -e \$outdir/cstacks.complete ]
 then
   echo \"Cstacks already completed\"
 else
-  cstacks -n \${n} -p ${cstacks_cores} --popmap ./output/param/popmap.txt -P \$outdir/
+  cstacks -n \${n} -p ${cstacks_cores} --popmap ./output/02_param/popmap.txt -P \$outdir/
   retval=\$?
 fi
 
@@ -212,7 +212,7 @@ else
   exit -1
 fi
 
-" > ./scripts/param/02_cstacks.sh
+" > ./scripts/02_param/02_cstacks.sh
 
 
 #
@@ -228,8 +228,8 @@ echo "#!/bin/bash
 #SBATCH --job-name=03_sstacks
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=${email}
-#SBATCH --output ./output/param/logs/03_sstacks_%a.log
-#SBATCH --error ./output/param/logs/03_sstacks_%a.log
+#SBATCH --output ./output/02_param/logs/03_sstacks_%a.log
+#SBATCH --error ./output/02_param/logs/03_sstacks_%a.log
 #SBATCH --array=1-${sstacks_jobs}%$((${cores} / ${sstacks_cores}))
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -256,10 +256,10 @@ done
 
 n=\$((n + M))
 
-outdir=\"./output/param/sstacks/\${M}_\${m}_\${n}\"
+outdir=\"./output/02_param/sstacks/\${M}_\${m}_\${n}\"
 mkdir \$outdir
 
-for f in ./output/param/cstacks/\${M}_\${m}_\${n}/*; do
+for f in ./output/02_param/cstacks/\${M}_\${m}_\${n}/*; do
   file_name=\$(basename \${f})
   ln -s ../../cstacks/\${M}_\${m}_\${n}/\${file_name} \$outdir/
 done
@@ -278,7 +278,7 @@ if [ -e \$outdir/sstacks.complete ]
 then
   echo \"sstacks already completed\"
 else
-  sstacks -p ${sstacks_cores} --popmap ./output/param/popmap.txt -P \$outdir/
+  sstacks -p ${sstacks_cores} --popmap ./output/02_param/popmap.txt -P \$outdir/
   retval=\$?
 fi
 
@@ -299,7 +299,7 @@ else
   exit -1
 fi
 
-" > ./scripts/param/03_sstacks.sh
+" > ./scripts/02_param/03_sstacks.sh
 
 
 
@@ -312,8 +312,8 @@ echo "#!/bin/bash
 #SBATCH --job-name=04_tsv2bam
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=${email}
-#SBATCH --output ./output/param/logs/04_tsv2bam_%a.log
-#SBATCH --error ./output/param/logs/04_tsv2bam_%a.log
+#SBATCH --output ./output/02_param/logs/04_tsv2bam_%a.log
+#SBATCH --error ./output/02_param/logs/04_tsv2bam_%a.log
 #SBATCH --array=1-${tsv2bam_jobs}%$((${cores} / ${tsv2bam_cores}))
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -341,10 +341,10 @@ done
 
 n=\$((n + M))
 
-outdir=\"./output/param/tsv2bam/\${M}_\${m}_\${n}\"
+outdir=\"./output/02_param/tsv2bam/\${M}_\${m}_\${n}\"
 mkdir \$outdir
 
-for f in ./output/param/sstacks/\${M}_\${m}_\${n}/*; do
+for f in ./output/02_param/sstacks/\${M}_\${m}_\${n}/*; do
   file_name=\$(basename \${f})
   ln -s ../../sstacks/\${M}_\${m}_\${n}/\${file_name} \$outdir/
 done
@@ -363,7 +363,7 @@ if [ -e \$outdir/tsv2bam.complete ]
 then
   echo \"tsv2bam already completed\"
 else
-  tsv2bam -M ./output/param/popmap.txt -P \$outdir/
+  tsv2bam -M ./output/02_param/popmap.txt -P \$outdir/
   retval=\$?
 fi
 
@@ -384,7 +384,7 @@ else
   exit -1
 fi
 
-" > ./scripts/param/04_tsv2bam.sh
+" > ./scripts/02_param/04_tsv2bam.sh
 
 
 
@@ -397,8 +397,8 @@ echo "#!/bin/bash
 #SBATCH --job-name=05_gstacks
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=${email}
-#SBATCH --output ./output/param/logs/05_gstacks_%a.log
-#SBATCH --error ./output/param/logs/05_gstacks_%a.log
+#SBATCH --output ./output/02_param/logs/05_gstacks_%a.log
+#SBATCH --error ./output/02_param/logs/05_gstacks_%a.log
 #SBATCH --array=1-${gstacks_jobs}%$((${cores} / ${gstacks_cores}))
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -426,10 +426,10 @@ done
 
 n=\$((n + M))
 
-outdir=\"./output/param/gstacks/\${M}_\${m}_\${n}\"
+outdir=\"./output/02_param/gstacks/\${M}_\${m}_\${n}\"
 mkdir \$outdir
 
-for f in ./output/param/tsv2bam/\${M}_\${m}_\${n}/*; do
+for f in ./output/02_param/tsv2bam/\${M}_\${m}_\${n}/*; do
   file_name=\$(basename \${f})
   ln -s ../../tsv2bam/\${M}_\${m}_\${n}/\${file_name} \$outdir/
 done
@@ -448,7 +448,7 @@ if [ -e \$outdir/gstacks.complete ]
 then
   echo \"gstacks already completed\"
 else
-  gstacks -M ./output/param/popmap.txt -P \$outdir/
+  gstacks -M ./output/02_param/popmap.txt -P \$outdir/
   retval=\$?
 fi
 
@@ -468,7 +468,7 @@ else
   sleep 10
   exit -1
 fi
-" > ./scripts/param/05_gstacks.sh
+" > ./scripts/02_param/05_gstacks.sh
 
 
 
@@ -480,8 +480,8 @@ echo "#!/bin/bash
 #SBATCH --job-name=06_populations
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=${email}
-#SBATCH --output ./output/param/logs/06_pop_%a.log
-#SBATCH --error ./output/param/logs/06_pop_%a.log
+#SBATCH --output ./output/02_param/logs/06_pop_%a.log
+#SBATCH --error ./output/02_param/logs/06_pop_%a.log
 #SBATCH --array=1-${pop_jobs}%$((${cores} / ${pop_cores}))
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -512,10 +512,10 @@ done
 
 n=\$((n + M))
 
-outdir=\"./output/param/populations/\${M}_\${m}_\${n}_\${r}/\"
+outdir=\"./output/02_param/populations/\${M}_\${m}_\${n}_\${r}/\"
 mkdir \$outdir
 
-for f in ./output/param/gstacks/\${M}_\${m}_\${n}/*; do
+for f in ./output/02_param/gstacks/\${M}_\${m}_\${n}/*; do
   file_name=\$(basename \${f})
   ln -s ../../gstacks/\${M}_\${m}_\${n}/\${file_name} \$outdir/
 done
@@ -533,7 +533,7 @@ if [ -e \$outdir/pop.complete ]
 then
   echo \"populations already completed\"
 else
-  populations -P \$outdir/ -M ./output/param/popmap.txt -r \${r}
+  populations -P \$outdir/ -M ./output/02_param/popmap.txt -r \${r}
   retval=\$?
 fi
 
@@ -554,9 +554,9 @@ else
   exit -1
 fi
 
-cp \$outdir/populations.sumstats_summary.tsv ./results/param/\${M}_\${m}_\${n}_\${r}.tsv
+cp \$outdir/populations.sumstats_summary.tsv ./results/02_param/\${M}_\${m}_\${n}_\${r}.tsv
 
-" > ./scripts/param/06_populations.sh
+" > ./scripts/02_param/06_populations.sh
 
 
 
@@ -565,8 +565,8 @@ echo "#!/bin/bash
 #SBATCH --job-name=07_r_plot
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=${email}
-#SBATCH --output ./output/param/logs/07_r_plot_%a.log
-#SBATCH --error ./output/param/logs/07_r_plot_%a.log
+#SBATCH --output ./output/02_param/logs/07_r_plot_%a.log
+#SBATCH --error ./output/02_param/logs/07_r_plot_%a.log
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
@@ -596,26 +596,26 @@ end_time=\$(date '+%F %T')
 echo
 echo \"\$end_time: Finished\"
 echo \"Time: \${total_time} seconds\"
-" > ./scripts/param/07_plot.sh
+" > ./scripts/02_param/07_plot.sh
 
 
-jid1=$(sbatch ./scripts/param/01_ustacks.sh | cut -f 4 -d' ')
+jid1=$(sbatch ./scripts/02_param/01_ustacks.sh | cut -f 4 -d' ')
 echo "ustacks job #: $jid1"
 
-jid2=$(sbatch --dependency=afterok:$jid1 --kill-on-invalid-dep=yes ./scripts/param/02_cstacks.sh | cut -f 4 -d' ')
+jid2=$(sbatch --dependency=afterok:$jid1 --kill-on-invalid-dep=yes ./scripts/02_param/02_cstacks.sh | cut -f 4 -d' ')
 echo "cstacks job #: $jid2"
 
-jid3=$(sbatch  --dependency=afterok:$jid2 --kill-on-invalid-dep=yes ./scripts/param/03_sstacks.sh | cut -f 4 -d' ')
+jid3=$(sbatch  --dependency=afterok:$jid2 --kill-on-invalid-dep=yes ./scripts/02_param/03_sstacks.sh | cut -f 4 -d' ')
 echo "sstacks job #: $jid3"
 
-jid4=$(sbatch  --dependency=afterok:$jid3 --kill-on-invalid-dep=yes ./scripts/param/04_tsv2bam.sh | cut -f 4 -d' ')
+jid4=$(sbatch  --dependency=afterok:$jid3 --kill-on-invalid-dep=yes ./scripts/02_param/04_tsv2bam.sh | cut -f 4 -d' ')
 echo "tsv2bam job #: $jid4"
 
-jid5=$(sbatch  --dependency=afterok:$jid4 --kill-on-invalid-dep=yes ./scripts/param/05_gstacks.sh | cut -f 4 -d' ')
+jid5=$(sbatch  --dependency=afterok:$jid4 --kill-on-invalid-dep=yes ./scripts/02_param/05_gstacks.sh | cut -f 4 -d' ')
 echo "gstacks job #: $jid5"
 
-jid6=$(sbatch  --dependency=afterok:$jid5 --kill-on-invalid-dep=yes ./scripts/param/06_populations.sh | cut -f 4 -d' ')
+jid6=$(sbatch  --dependency=afterok:$jid5 --kill-on-invalid-dep=yes ./scripts/02_param/06_populations.sh | cut -f 4 -d' ')
 echo "populations job #: $jid6"
 
-jid7=$(sbatch  --dependency=afterok:$jid6 --kill-on-invalid-dep=yes ./scripts/param/07_plot.sh | cut -f 4 -d' ')
+jid7=$(sbatch  --dependency=afterok:$jid6 --kill-on-invalid-dep=yes ./scripts/02_param/07_plot.sh | cut -f 4 -d' ')
 echo "r plot job #: $jid7"
