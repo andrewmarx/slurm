@@ -4,7 +4,9 @@ account=account_name
 cores=20
 
 # Parameters for process_radtags
-process_radtag_param="-e pstI -t 65 -r -c -q"
+# process_radtag_param="-e pstI -t 65 -r -c -q"
+process_radtag_param="-P --inline_inline --renz_1 pstI --renz_2 mspI -r -c -q"
+
 
 # Parameter combinations for testing
 samples=('sample 1' 'sample 2' 'sample 3')
