@@ -6,27 +6,26 @@ rm -r ./output
 rm -r ./results
 
 mkdir -p ./output/
-mkdir -p ./output/samples/
-mkdir -p ./output/logs/
-mkdir -p ./output/logs/process_radtags/
-mkdir -p ./scripts/process/
+mkdir -p ./output/01_radtags/samples/
+mkdir -p ./output/01_radtags/logs/
+mkdir -p ./scripts/01_radtags/
 
 process_jobs=$(find ./data/* -maxdepth 0 -type d | wc -l)
-slurm_modules="stacks/2.53"
+slurm_modules="gcc/8.2.0 stacks/2.53"
 
 echo "#!/bin/bash
 
-#SBATCH --job-name=process_radtags
+#SBATCH --job-name=radtags
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=${email}
-#SBATCH --output ./output/logs/process_radtags/process_radtag_%a.log
-#SBATCH --error ./output/logs/process_radtags/process_radtag_%a.log
+#SBATCH --output ./output/01_radtags/logs/radtag_%a.log
+#SBATCH --error ./output/01_radtags/logs/radtag_%a.log
 #SBATCH --array=1-${process_jobs}%${cores}
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=10gb
-#SBATCH --time=10:00:00
+#SBATCH --mem=25gb
+#SBATCH --time=50:00:00
 #SBATCH --account=${account}
 #SBATCH --qos=${account}
 
@@ -37,11 +36,11 @@ echo
 
 seq_libraries=(./data/*/)
 
-process_radtags -p ./data/\${SLURM_ARRAY_TASK_ID} -o ./output/samples/ -b ./data/\${SLURM_ARRAY_TASK_ID}/key.txt ${process_radtag_param}
+process_radtags -p ./data/\${SLURM_ARRAY_TASK_ID} -o ./output/01_radtags/samples/ -b ./data/\${SLURM_ARRAY_TASK_ID}/key.txt ${process_radtag_param}
 
 echo
 echo \"\$(date '+%F %T'): Script finished\"
 echo \"Time: \${SECONDS} seconds\"
-" > ./scripts/process/process_radtags.sh
+" > ./scripts/01_radtags/process_radtags.sh
 
-sbatch ./scripts/process/process_radtags.sh
+sbatch ./scripts/01_radtags/process_radtags.sh
