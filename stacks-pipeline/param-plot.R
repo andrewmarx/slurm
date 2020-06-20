@@ -4,7 +4,7 @@ p <- function(..., sep='') {
 
 library("ggplot2")
 
-files = list.files("./results/param")
+files = list.files("./results/02_param")
 param = tools::file_path_sans_ext(files)
 
 
@@ -14,7 +14,7 @@ names(param) <- c("M", "m", "n", "r")
 loci <- c()
 
 for (f in files) {
-  dat = read.csv(p("./results/param/", f), header = FALSE, skip = 5, sep = "\t", stringsAsFactors = FALSE)
+  dat = read.csv(p("./results/02_param/", f), header = FALSE, skip = 5, sep = "\t", stringsAsFactors = FALSE)
   loci <- c(loci, dat$V5)
 }
 
