@@ -1,6 +1,7 @@
 # HPC info
 email=youremail@ufl.edu
 account=account_name
+qos=account_name
 cores=20
 
 # Parameters for process_radtags
