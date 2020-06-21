@@ -7,7 +7,7 @@ mkdir -p ./output/denovo/
 mkdir -p ./output/denovo/logs/
 mkdir -p ./results/denovo/
 
-slurm_modules="stacks/2.53"
+slurm_modules="gcc/8.2.0 stacks/2.53"
 
 num_samples=$(find ./output/samples/ -name "*.gz" | wc -l)
 ustacks_jobs=$(($num_samples))
