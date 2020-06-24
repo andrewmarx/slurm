@@ -9,7 +9,7 @@ mkdir -p ./results/03_denovo/
 
 slurm_modules="gcc/8.2.0 stacks/2.53"
 
-num_samples=$(find ./output/samples/ -name "*.gz" | wc -l)
+num_samples=$(find ./output/01_radtags/samples/ -name "*.rem.1.fq.gz" | wc -l) # TODO: is a "rem" file always generated? I think so, but perhaps find an alternative
 ustacks_jobs=$(($num_samples))
 ustacks_cores=10
 
@@ -25,8 +25,8 @@ echo "#!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=${ustacks_cores}
-#SBATCH --mem-per-cpu=2gb
-#SBATCH --time=20:00:00
+#SBATCH --mem-per-cpu=3gb
+#SBATCH --time=10:00:00
 #SBATCH --account=${account}
 #SBATCH --qos=${qos}
 
@@ -35,16 +35,18 @@ module load ${slurm_modules}
 counter=0
 
 
-for data_file in ./output/samples/*.gz; do
-  counter=\$((counter + 1))
-  if [ \$counter -eq \$SLURM_ARRAY_TASK_ID ]; then
-    break
+for data_file in ./output/01_radtags/samples/*.1.fq.gz; do
+  if [[ \"\${data_file}\" != *\".rem.\"* ]]; then
+    counter=\$((counter + 1))
+    if [ \$counter -eq \$SLURM_ARRAY_TASK_ID ]; then
+      break
+    fi
   fi
 done
 
 
-sample_name=\$(basename \$data_file)
-sample_name=\${sample_name%%.*}
+sample_name=\"\${data_file##*/}\"
+sample_name=\"\${sample_name%%.*}\"
 echo \$sample_name
 
 
@@ -67,7 +69,7 @@ else
   rm \$(ls -I{*.alleles.tsv.gz,*.snps.tsv.gz,*.tags.tsv.gz,*.ustacks.complete})
   cd ..
 
-  ustacks -f \$data_file -o ./output/03_denovo/ -i \$counter -p ${ustacks_cores} ${ustacks_param}
+  ustacks -f \$data_file -o ./output/03_denovo/ -i \$counter -p ${ustacks_cores} ${ustacks_param} --name \${sample_name}
   retval=\$?
 fi
 
@@ -130,7 +132,7 @@ then
 else
   rm -r ./output/03_denovo/catalog.*
 
-  cstacks -p ${cstacks_cores} --popmap ./data/popmap.txt -P ./output/03_denovo/ ${cstacks_param}
+  cstacks -p ${cstacks_cores} --popmap ./data/catalog.txt -P ./output/03_denovo/ ${cstacks_param}
   retval=\$?
 fi
 
@@ -155,7 +157,7 @@ fi
 
 
 
-sstacks_cores=5
+sstacks_cores=10
 
 # Create the slurm script that runs the simulations
 echo "#!/bin/bash
@@ -168,7 +170,7 @@ echo "#!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=${sstacks_cores}
-#SBATCH --mem=15gb
+#SBATCH --mem=60gb
 #SBATCH --time=10:00:00
 #SBATCH --account=${account}
 #SBATCH --qos=${qos}
@@ -214,7 +216,7 @@ fi
 " > ./scripts/03_denovo/03_sstacks.sh
 
 
-tsv2bam_cores=2
+tsv2bam_cores=5
 
 # Create the slurm script that runs the simulations
 echo "#!/bin/bash
@@ -227,7 +229,7 @@ echo "#!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=${tsv2bam_cores}
-#SBATCH --mem=5gb
+#SBATCH --mem=15gb
 #SBATCH --time=10:00:00
 #SBATCH --account=${account}
 #SBATCH --qos=${qos}
@@ -250,7 +252,7 @@ then
 else
   rm -r ./output/03_denovo/*.batches.bam
 
-  tsv2bam -M ./data/popmap.txt -P ./output/03_denovo/ -t ${tsv2bam_cores}
+  tsv2bam -M ./data/popmap.txt -P ./output/03_denovo/ -t ${tsv2bam_cores} -R ./output/01_radtags/samples/
   retval=\$?
 fi
 
@@ -275,7 +277,7 @@ fi
 
 
 
-gstacks_cores=2
+gstacks_cores=10
 
 # Create the slurm script that runs the simulations
 echo "#!/bin/bash
@@ -288,7 +290,7 @@ echo "#!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=${gstacks_cores}
-#SBATCH --mem=20gb
+#SBATCH --mem=100gb
 #SBATCH --time=10:00:00
 #SBATCH --account=${account}
 #SBATCH --qos=${qos}
@@ -383,7 +385,7 @@ echo \"\$end_time: Finished\"
 echo \"Time: \${total_time} seconds\"
 
 
-" > ./scripts/denovo/03_06_populations.sh
+" > ./scripts/03_denovo/06_populations.sh
 
 
 
