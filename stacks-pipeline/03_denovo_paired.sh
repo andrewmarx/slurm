@@ -132,7 +132,7 @@ then
 else
   rm -r ./output/03_denovo/catalog.*
 
-  cstacks -p ${cstacks_cores} --popmap ./data/catalog.txt -P ./output/03_denovo/ ${cstacks_param}
+  cstacks -p ${cstacks_cores} --popmap ./data/catalog.tsv -P ./output/03_denovo/ ${cstacks_param}
   retval=\$?
 fi
 
@@ -192,7 +192,7 @@ then
 else
   rm -r ./output/03_denovo/*.matches.tsv.gz
 
-  sstacks -p ${sstacks_cores} --popmap ./data/popmap.txt -P ./output/03_denovo/ ${sstacks_param}
+  sstacks -p ${sstacks_cores} --popmap ./data/popmap.tsv -P ./output/03_denovo/ ${sstacks_param}
   retval=\$?
 fi
 
@@ -252,7 +252,7 @@ then
 else
   rm -r ./output/03_denovo/*.batches.bam
 
-  tsv2bam -M ./data/popmap.txt -P ./output/03_denovo/ -t ${tsv2bam_cores} -R ./output/01_radtags/samples/
+  tsv2bam -M ./data/popmap.tsv -P ./output/03_denovo/ -t ${tsv2bam_cores} -R ./output/01_radtags/samples/
   retval=\$?
 fi
 
@@ -313,7 +313,7 @@ then
 else
   rm -r ./output/03_denovo/gstacks.*
 
-  gstacks -M ./data/popmap.txt -P ./output/03_denovo/ -t ${gstacks_cores} ${gstacks_param}
+  gstacks -M ./data/popmap.tsv -P ./output/03_denovo/ -t ${gstacks_cores} ${gstacks_param}
   retval=\$?
 fi
 
@@ -368,7 +368,7 @@ echo
 
 SECONDS=0
 
-populations -P ./output/03_denovo/ -O ./results/03_denovo/ -M ./data/popmap.txt -t ${pop_cores} ${populations_param} --vcf
+populations -P ./output/03_denovo/ -O ./results/03_denovo/ -M ./data/popmap.tsv -t ${pop_cores} ${populations_param} --vcf
 
 mkdir -p ./tmp
 awk -vOFS='\t' '!/^#/ {\$3=\$1 "_" (\$2-1)} 1' ./results/03_denovo/populations.snps.vcf > ./tmp/temp_1.vcf && \\

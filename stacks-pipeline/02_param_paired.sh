@@ -22,14 +22,14 @@ slurm_modules="gcc/8.2.0 stacks/2.53"
 rm -r ./output/02_param/samples/*
 
 # Create an empty popmap file
-> ./output/02_param/popmap.txt
+> ./output/02_param/popmap.tsv
 
 for f in "${samples[@]}"; do
   # Make a symbolic link to the sample file
   ln -s "../../01_radtags/samples/${f}.1.fq.gz" ./output/02_param/samples/
   ln -s "../../01_radtags/samples/${f}.2.fq.gz" ./output/02_param/samples/
   # Add the sample to the popmap file
-  echo -e "${f}\t1" >> ./output/02_param/popmap.txt
+  echo -e "${f}\t1" >> ./output/02_param/popmap.tsv
 done
 
 
@@ -194,7 +194,7 @@ if [ -e \$outdir/cstacks.complete ]
 then
   echo \"Cstacks already completed\"
 else
-  cstacks -n \${n} -p ${cstacks_cores} --popmap ./output/02_param/popmap.txt -P \$outdir/
+  cstacks -n \${n} -p ${cstacks_cores} --popmap ./output/02_param/popmap.tsv -P \$outdir/
     
   retval=\$?
 fi
@@ -282,7 +282,7 @@ if [ -e \$outdir/sstacks.complete ]
 then
   echo \"sstacks already completed\"
 else
-  sstacks -p ${sstacks_cores} --popmap ./output/02_param/popmap.txt -P \$outdir/
+  sstacks -p ${sstacks_cores} --popmap ./output/02_param/popmap.tsv -P \$outdir/
   retval=\$?
 fi
 
@@ -367,7 +367,7 @@ if [ -e \$outdir/tsv2bam.complete ]
 then
   echo \"tsv2bam already completed\"
 else
-  tsv2bam -M ./output/02_param/popmap.txt -P \$outdir/ -R ./output/02_param/samples/
+  tsv2bam -M ./output/02_param/popmap.tsv -P \$outdir/ -R ./output/02_param/samples/
   retval=\$?
 fi
 
@@ -452,7 +452,7 @@ if [ -e \$outdir/gstacks.complete ]
 then
   echo \"gstacks already completed\"
 else
-  gstacks -M ./output/02_param/popmap.txt -P \$outdir/
+  gstacks -M ./output/02_param/popmap.tsv -P \$outdir/
   retval=\$?
 fi
 
@@ -537,7 +537,7 @@ if [ -e \$outdir/pop.complete ]
 then
   echo \"populations already completed\"
 else
-  populations -P \$outdir/ -M ./output/02_param/popmap.txt -r \${r}
+  populations -P \$outdir/ -M ./output/02_param/popmap.tsv -r \${r}
   retval=\$?
 fi
 

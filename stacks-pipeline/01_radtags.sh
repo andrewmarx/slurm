@@ -25,7 +25,7 @@ echo "#!/bin/bash
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=25gb
-#SBATCH --time=50:00:00
+#SBATCH --time=75:00:00
 #SBATCH --account=${account}
 #SBATCH --qos=${account}
 
