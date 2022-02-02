@@ -1,4 +1,4 @@
-A collection of scripts I wrote for myself and others to simplify the process of running certain analyses on UF's supercomputer. Essentially, the scripts use a config file with basic information to generate a custom optimized slurm script and automatically submit it to the schedular. This removes most of the complexity involved for users that are less experienced with the process.
+A collection of scripts I wrote for myself and others to simplify the process of running certain analyses on UF's supercomputer. Essentially, the scripts use a config file with basic information to generate a custom optimized slurm script and automatically submit it to the scheduler. This removes most of the complexity involved for users that are less experienced with the process.
 
 Some key goals of these scripts:
 - Simplify the process of using the supercomputer for less technical users
